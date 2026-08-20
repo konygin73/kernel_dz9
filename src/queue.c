@@ -28,7 +28,7 @@ int msgpool_ctx_init(void) {
   if (!g_msgpool_ctx.msg_cache) {
     return MP_NOMEM;
   }
-  if (g_msgpool_ctx.alloc_type == T_MEMPOOL) {
+  if (!g_msgpool_ctx.msg_pool) {//g_msgpool_ctx.alloc_type == T_MEMPOOL
     g_msgpool_ctx.msg_pool = mempool_create_slab_pool(g_msgpool_ctx.pool_min_nr,
                                                       g_msgpool_ctx.msg_cache);
     if (!g_msgpool_ctx.msg_pool) {

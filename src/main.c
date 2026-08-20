@@ -13,6 +13,7 @@ static void timer_callback(struct timer_list *t) {
   int ret;
   char msg[MSG_TEXT_MAX];
 
+  pr_info("Timer step\n");
   do {
     ret = msgpool_ctx_get(msg, sizeof(msg));
     if (ret == MP_BUSY) {

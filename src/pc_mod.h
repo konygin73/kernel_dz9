@@ -21,6 +21,7 @@
 #include <linux/slab.h>
 #include <linux/mempool.h>
 #include <linux/timer.h>
+#include <linux/string.h>
 
 #define MP_OK        0           /* операция успешна             */
 #define MP_INVALID  (-EINVAL)    /* неверный параметр            */

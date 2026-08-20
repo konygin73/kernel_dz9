@@ -8,7 +8,7 @@
 int g_alloc_type = ALLOCATOR;
 static int param_get_allocator_ops(char *buffer,
                                    const struct kernel_param *kp) {
-  const char KMEM_CASHE[] = {"Alloc type KMEM_CASHE\n"};
+  const char KMEM_CASHE[] = {"Alloc type KMEM_CAСHE\n"};
   const char MEMPOOL[] = {"Alloc type MEMPOOL\n"};
 
   const char *alloc = KMEM_CASHE;
@@ -135,26 +135,26 @@ static const struct kernel_param_ops stats_ops = {
 module_param_cb(stats, &stats_ops, NULL, 0444);
 MODULE_PARM_DESC(stats, "статистика");
 
-static int param_set_flash_ops(const char *val, const struct kernel_param *kp) {
-  int flash;
+static int param_set_flush_ops(const char *val, const struct kernel_param *kp) {
+  int flush;
   int ret;
 
-  ret = kstrtouint(val, 0, &flash);
+  ret = kstrtouint(val, 0, &flush);
   if (ret)
     return ret;
 
-  if (flash != 1) {
-    pr_err("Invalid flash %u.\n", flash);
+  if (flush != 1) {
+    pr_err("Invalid flush %u.\n", flush);
     return -EINVAL;
   }
 
   msgpool_ctx_flush();
   return MP_OK;
 }
-static const struct kernel_param_ops flash_ops = {
-    .set = param_set_flash_ops,
+static const struct kernel_param_ops flush_ops = {
+    .set = param_set_flush_ops,
 };
-module_param_cb(flush, &flash_ops, NULL, 0200);
+module_param_cb(flush, &flush_ops, NULL, 0200);
 MODULE_PARM_DESC(flush, "сброс очереди");
 
 int g_interval_ms = TIMER_INTERVAL_MS;
