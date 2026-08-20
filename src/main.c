@@ -10,16 +10,21 @@ MODULE_DESCRIPTION("Kernel memory");
 MODULE_VERSION("1.0");
 
 static void timer_callback(struct timer_list *t) {
+  int ret;
   char msg[MSG_TEXT_MAX];
 
-  int ret = msgpool_ctx_get(msg, sizeof(msg));
-  if (ret == MP_BUSY) {
-    pr_info("msgpool BUSY\n");
-  }
+  do {
+    ret = msgpool_ctx_get(msg, sizeof(msg));
+    if (ret == MP_BUSY) {
+      pr_info("msgpool BUSY %d\n", ret);
+    }
+  } while(ret == MP_OK);
+
   mod_timer(&g_msgpool_ctx.consumer_timer,
             jiffies + msecs_to_jiffies(g_msgpool_ctx.interval_ms));
 }
 
+int g_is_init = 0;
 static int __init my_module_init(void) {
   int ret = msgpool_ctx_init();
   if (ret != MP_OK) {
@@ -31,6 +36,7 @@ static int __init my_module_init(void) {
   timer_setup(&g_msgpool_ctx.consumer_timer, timer_callback, 0);
   mod_timer(&g_msgpool_ctx.consumer_timer,
             jiffies + msecs_to_jiffies(g_msgpool_ctx.interval_ms));
+  g_is_init = 1;
 
   return ret;
 }

@@ -5,6 +5,7 @@
 #define __STR(x) #x
 #define STR(x) __STR(x)
 
+int g_alloc_type = ALLOCATOR;
 static int param_get_allocator_ops(char *buffer,
                                    const struct kernel_param *kp) {
   const char KMEM_CASHE[] = {"Alloc type KMEM_CASHE\n"};
@@ -25,12 +26,18 @@ static int param_set_allocator_ops(const char *val,
   int ret;
 
   ret = kstrtouint(val, 0, &allocator);
-  if (ret)
+  if (ret) {
     return ret;
+  }
 
   if (allocator != 0 && allocator != 1) {
     pr_err("Invalid allocator %u.\n", allocator);
     return -EINVAL;
+  }
+
+  g_alloc_type = allocator;
+  if (g_is_init == 0) {
+    return MP_OK;  
   }
 
   struct msg_queue *queue = &g_msgpool_ctx.queue;
@@ -39,6 +46,7 @@ static int param_set_allocator_ops(const char *val,
     pr_info("Аллокатор не меняется для не пустой очереди\n");
   } else {
     g_msgpool_ctx.alloc_type = allocator;
+    pr_info("Аллокатор: %s\n", allocator == 0 ? "KMEM_CACHE" : "MEMPOOL");
   }
   spin_unlock_irqrestore(&queue->lock, flags);
 
@@ -52,7 +60,6 @@ module_param_cb(alloc_type, &type_allocator_ops, NULL, 0644);
 MODULE_PARM_DESC(alloc_type, "alloc_type 0 KMEM_CASHE или 1 MEMPOOL");
 
 static int param_set_send_ops(const char *val, const struct kernel_param *kp) {
-
   size_t len;
   char msg[MSG_TEXT_MAX];
 
@@ -93,9 +100,9 @@ static int param_get_inbox_ops(char *buffer, const struct kernel_param *kp) {
 
   spin_lock_irqsave(&g_msgpool_ctx.last_msg_lock, flags);
   if (strlen(g_msgpool_ctx.last_msg) == 0) {
-    ret = scnprintf(buffer, PAGE_SIZE, "(empty)\n");
+    ret = scnprintf(buffer, PAGE_SIZE, "Last msg: (empty)\n");
   } else {
-    ret = scnprintf(buffer, PAGE_SIZE, "%s\n", g_msgpool_ctx.last_msg);
+    ret = scnprintf(buffer, PAGE_SIZE, "Last msg: %s\n", g_msgpool_ctx.last_msg);
   }
   spin_unlock_irqrestore(&g_msgpool_ctx.last_msg_lock, flags);
   return ret;
@@ -150,21 +157,30 @@ static const struct kernel_param_ops flash_ops = {
 module_param_cb(flush, &flash_ops, NULL, 0200);
 MODULE_PARM_DESC(flush, "сброс очереди");
 
+int g_interval_ms = TIMER_INTERVAL_MS;
 static int param_set_interval_ops(const char *val,
                                   const struct kernel_param *kp) {
   int interval;
   int ret;
 
   ret = kstrtouint(val, 0, &interval);
-  if (ret)
+  if (ret) {
+    pr_err("Invalid interval_ms %s\n", val);
     return ret;
+  }
 
   if (interval < MIN_INTERVAL_MS || interval > MAX_INTERVAL_MS) {
     pr_err("Invalid interval_ms %u.\n", interval);
     return -EINVAL;
   }
 
+  g_interval_ms = interval;
+  if (g_is_init == 0) {
+    return MP_OK;
+  }
+
   g_msgpool_ctx.interval_ms = interval;
+  pr_info("Interval_ms: %u\n", interval);
   mod_timer(&g_msgpool_ctx.consumer_timer,
             jiffies + msecs_to_jiffies(g_msgpool_ctx.interval_ms));
 

@@ -1,15 +1,11 @@
 #include "pc_mod.h"
 
-static const enum alloc_etype ALLOCATOR = T_KMEM_CACHE; //значение по умолчанию
-static const uint POOL_MIN_NR = 8;
-static const unsigned long TIMER_INTERVAL_MS = 10000;
-
 struct msgpool_ctx g_msgpool_ctx;
 
 int msgpool_ctx_init(void) {
-  g_msgpool_ctx.alloc_type = ALLOCATOR;
+  g_msgpool_ctx.alloc_type = g_alloc_type;
   g_msgpool_ctx.pool_min_nr = POOL_MIN_NR;
-  g_msgpool_ctx.interval_ms = TIMER_INTERVAL_MS;
+  g_msgpool_ctx.interval_ms = g_interval_ms;
   g_msgpool_ctx.msg_cache = NULL;
   g_msgpool_ctx.msg_pool = NULL;
 
@@ -116,6 +112,7 @@ void msgpool_ctx_flush(void) {
   while (queue->count > 0) {
     struct msg *message = queue->slots[queue->head];
     queue->head = (queue->head + 1) % MSG_QUEUE_MAX;
+    pr_info("Flush: %s\n", message->text);
     --queue->count;
     free_msg(&g_msgpool_ctx, message);
     atomic_inc(&g_msgpool_ctx.flushed_total);

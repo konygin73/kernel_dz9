@@ -27,8 +27,13 @@ cat /sys/module/kernel_msgpool/parameters/inbox
 cat /sys/module/kernel_msgpool/parameters/stats
 # sent=3 consumed=3 flushed=0 dropped=0 queued=0 alloc=kmem_cache interval_ms=2000
 
+sleep 3
+
+cat /sys/module/kernel_msgpool/parameters/inbox
+
+cat /sys/module/kernel_msgpool/parameters/stats
+
 # Переключиться на mempool
-echo 0 > /sys/module/kernel_msgpool/parameters/alloc_type  # убедиться что очередь пуста
 echo 1 > /sys/module/kernel_msgpool/parameters/alloc_type
 
 echo "mempool message" > /sys/module/kernel_msgpool/parameters/send

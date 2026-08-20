@@ -21,7 +21,9 @@ void free_msg(struct msgpool_ctx *msgpool, struct msg *message) {
   }
   if (msgpool->alloc_type == T_KMEM_CACHE) {
     kmem_cache_free(msgpool->msg_cache, message);
+    pr_info("Удаление из KMEM_CACHE аллокатора\n");
   } else if (msgpool->alloc_type == T_MEMPOOL) {
     mempool_free(message, msgpool->msg_pool);
+    pr_info("Удаление из MEMPOOL аллокатора\n");
   }
 }

@@ -35,6 +35,10 @@
 #define MIN_INTERVAL_MS 100     /*интервал таймера min                                                  */
 #define MAX_INTERVAL_MS 60000   /*интервал таймера max                                                  */
 
+#define ALLOCATOR T_KMEM_CACHE  /*значение по умолчанию */
+#define POOL_MIN_NR 8
+#define TIMER_INTERVAL_MS 10000
+
 enum alloc_etype {
     T_KMEM_CACHE = 0,
     T_MEMPOOL
@@ -79,6 +83,9 @@ struct msgpool_ctx {
     unsigned int seq_counter;        /* монотонный счётчик сообщений       */
 };
 
+extern int g_is_init;
+extern int g_alloc_type;
+extern int g_interval_ms;
 extern struct msgpool_ctx g_msgpool_ctx;
 
 struct msg* alloc_msg(struct msgpool_ctx *msgpool);
